@@ -1,8 +1,87 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "GADM Map - Final Fix";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div id="tech-panel" style="position:fixed; top:20px; right:20px; background:rgba(0,0,0,0.9); color:#00ff00; padding:15px; font-family:monospace; z-index:9999; border:1px solid #00ff00; border-radius:8px; display:none; min-width:240px;">
+    <h5 style="border-bottom:1px solid #00ff00; color:#fff; margin-top:0;">GRAPH DATA</h5>
+    <p>Vertices (V): <span id="v-val" style="float:right;">-</span></p>
+    <p>Edges (E): <span id="e-val" style="float:right;">-</span></p>
+    <p>Faces (F): <span id="f-val" style="float:right;">-</span></p>
+    <p>Is Planar: <b id="p-val" style="float:right;">-</b></p>
 </div>
+
+<div id="map" style="height: calc(100vh - 100px); width: 100%; border-radius:10px; border:1px solid #ccc;"></div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    var map = L.map('map').setView([39.0, 35.0], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    var ilKatmani, ilceKatmani;
+
+    // İsimleri eşleştirmek için temizleyen yardımcı fonksiyon
+    function temizle(s) {
+        if(!s) return "";
+        return s.toString().toLowerCase()
+            .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u')
+            .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c')
+            .replace(/\s+/g, ''); // Tüm boşlukları siler
+    }
+
+    // 1. İlleri Yükle
+    fetch('/data/illers.json').then(r => r.json()).then(data => {
+        ilKatmani = L.geoJSON(data, {
+            style: { fillColor: '#3498db', weight: 1, color: 'white', fillOpacity: 0.4 },
+            onEachFeature: function (f, l) {
+                var cityName = f.properties.NAME_1;
+                l.on('click', function (e) {
+                    map.fitBounds(e.target.getBounds());
+                    analizVeBoya(cityName);
+                });
+            }
+        }).addTo(map);
+    });
+
+    function analizVeBoya(cityName) {
+        if (ilceKatmani) map.removeLayer(ilceKatmani);
+
+        fetch('/Map/GetAndColorDistricts?cityName=' + cityName)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('tech-panel').style.display = 'block';
+                document.getElementById('v-val').innerText = data.stats.v;
+                document.getElementById('e-val').innerText = data.stats.e;
+                document.getElementById('f-val').innerText = data.stats.f;
+                document.getElementById('p-val').innerText = data.planarResult ? "YES" : "NO";
+
+                fetch('/data/ilcelers.json').then(r => r.json()).then(geo => {
+                    var filtered = {
+                        type: "FeatureCollection",
+                        features: geo.features.filter(feat => feat.properties.NAME_1 === cityName)
+                    };
+
+                    ilceKatmani = L.geoJSON(filtered, {
+                        style: function(f) {
+                            var gadmName = temizle(f.properties.NAME_2);
+                            // C#'tan gelen listedeki isimle GeoJSON'daki ismi temizlenmiş halde eşleştir
+                            var district = data.districts.find(x => temizle(x.name) === gadmName);
+
+                            var renkler = ["#ccc", "#e74c3c", "#2ecc71", "#3498db", "#f1c40f"];
+                            var cId = district ? district.colorId : 0;
+
+                            return {
+                                fillColor: renkler[cId],
+                                fillOpacity: 0.8, color: "black", weight: 1.5
+                            };
+                        },
+                        onEachFeature: function (feature, layer) {
+                            layer.bindPopup("<b>İlçe:</b> " + feature.properties.NAME_2);
+                            layer.bindTooltip(feature.properties.NAME_2, { sticky: true });
+                        }
+                    }).addTo(map);
+                });
+            });
+    }
+</script>
