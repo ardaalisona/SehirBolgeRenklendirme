@@ -1,0 +1,199 @@
+{
+    [
+        {
+            "Name": "Adalar",
+            "Neighbors": [ "Kadikoy", "Kartal", "Maltepe", "Pendik" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Arnavutkoy",
+            "Neighbors": [ "Eyupsultan", "Basaksehir", "Esenyurt", "Buyukcekmece", "Catalca" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Atasehir",
+            "Neighbors": [ "Kadikoy", "Uskudar", "Umraniye", "Sancaktepe", "Maltepe" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Avcilar",
+            "Neighbors": [ "Kucukcekmece", "Basaksehir", "Esenyurt", "Beylikduzu" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Bagcilar",
+            "Neighbors": [ "Kucukcekmece", "Basaksehir", "Esenler", "Bahcelievler", "Gungoren" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Bahcelievler",
+            "Neighbors": [ "Bagcilar", "Kucukcekmece", "Bakirkoy", "Gungoren" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Bakirkoy",
+            "Neighbors": [ "Bahcelievler", "Kucukcekmece", "Gungoren", "Zeytinburnu" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Basaksehir",
+            "Neighbors": [ "Arnavutkoy", "Eyupsultan", "Esenler", "Bagcilar", "Kucukcekmece", "Avcilar", "Esenyurt" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Bayrampasa",
+            "Neighbors": [ "Eyupsultan", "Esenler", "Gungoren", "Zeytinburnu" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Besiktas",
+            "Neighbors": [ "Sariyer", "Sisli", "Beyoglu" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Beykoz",
+            "Neighbors": [ "Sariyer", "Cekmekoy", "Sile", "Umraniye", "Uskudar" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Beylikduzu",
+            "Neighbors": [ "Avcilar", "Esenyurt", "Buyukcekmece" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Beyoglu",
+            "Neighbors": [ "Sisli", "Besiktas", "Kagithane", "Fatih" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Buyukcekmece",
+            "Neighbors": [ "Arnavutkoy", "Catalca", "Silivri", "Esenyurt", "Beylikduzu" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Catalca",
+            "Neighbors": [ "Arnavutkoy", "Buyukcekmece", "Silivri" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Cekmekoy",
+            "Neighbors": [ "Beykoz", "Sile", "Pendik", "Sancaktepe", "Umraniye" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Esenler",
+            "Neighbors": [ "Basaksehir", "Sultangazi", "Gaziosmanpasa", "Bayrampasa", "Bagcilar", "Gungoren" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Esenyurt",
+            "Neighbors": [ "Basaksehir", "Arnavutkoy", "Buyukcekmece", "Beylikduzu", "Avcilar" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Eyupsultan",
+            "Neighbors": [ "Arnavutkoy", "Sariyer", "Sisli", "Kagithane", "Beyoglu", "Fatih", "Zeytinburnu", "Bayrampasa", "Gaziosmanpasa", "Sultangazi" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Fatih",
+            "Neighbors": [ "Zeytinburnu", "Eyupsultan", "Beyoglu" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Gaziosmanpasa",
+            "Neighbors": [ "Eyupsultan", "Sultangazi", "Esenler", "Bayrampasa" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Gungoren",
+            "Neighbors": [ "Esenler", "Bagcilar", "Bahcelievler", "Bakirkoy", "Zeytinburnu", "Bayrampasa" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Kadikoy",
+            "Neighbors": [ "Uskudar", "Atasehir", "Maltepe", "Adalar" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Kagithane",
+            "Neighbors": [ "Sariyer", "Sisli", "Beyoglu", "Eyupsultan" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Kartal",
+            "Neighbors": [ "Maltepe", "Sancaktepe", "Sultanbeyli", "Pendik", "Adalar" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Kucukcekmece",
+            "Neighbors": [ "Basaksehir", "Bagcilar", "Bahcelievler", "Bakirkoy", "Avcilar" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Maltepe",
+            "Neighbors": [ "Kadikoy", "Atasehir", "Sancaktepe", "Kartal", "Adalar" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Pendik",
+            "Neighbors": [ "Kartal", "Sultanbeyli", "Sancaktepe", "Cekmekoy", "Sile", "Tuzla", "Adalar" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Sancaktepe",
+            "Neighbors": [ "Cekmekoy", "Umraniye", "Atasehir", "Maltepe", "Kartal", "Sultanbeyli", "Pendik" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Sariyer",
+            "Neighbors": [ "Eyupsultan", "Sisli", "Besiktas", "Beykoz" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Silivri",
+            "Neighbors": [ "Catalca", "Buyukcekmece" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Sultanbeyli",
+            "Neighbors": [ "Sancaktepe", "Kartal", "Pendik" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Sultangazi",
+            "Neighbors": [ "Eyupsultan", "Gaziosmanpasa", "Esenler", "Basaksehir" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Sile",
+            "Neighbors": [ "Beykoz", "Cekmekoy", "Pendik" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Sisli",
+            "Neighbors": [ "Sariyer", "Eyupsultan", "Kagithane", "Beyoglu", "Besiktas" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Tuzla",
+            "Neighbors": [ "Pendik" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Umraniye",
+            "Neighbors": [ "Beykoz", "Cekmekoy", "Sancaktepe", "Atasehir", "Uskudar" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Uskudar",
+            "Neighbors": [ "Beykoz", "Umraniye", "Atasehir", "Kadikoy" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Zeytinburnu",
+            "Neighbors": [ "Fatih", "Eyupsultan", "Bayrampasa", "Gungoren", "Bakirkoy" ],
+            "ColorId": 0
+        }
+    ]
+}

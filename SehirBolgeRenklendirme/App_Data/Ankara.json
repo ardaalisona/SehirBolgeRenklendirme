@@ -1,0 +1,129 @@
+{
+    [
+        {
+            "Name": "Akyurt",
+            "Neighbors": [ "Cubuk", "Pur saklar", "Kalecik", "Elmadag" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Altindag",
+            "Neighbors": [ "Keçioren", "Pur saklar", "Akyurt", "Elmadag", "Mam ak", "Cankaya" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Ayas",
+            "Neighbors": [ "Beypazari", "Güdül", "Kizilcahamam", "Kahramankazan", "Sincan", "Polatli" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Bala",
+            "Neighbors": [ "Gölbasi", "Cankaya", "Mam ak", "Elmadag", "Haymana" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Beypazari",
+            "Neighbors": [ "Nallihan", "Güdül", "Ayas", "Polatli" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Camlidere",
+            "Neighbors": [ "Kizilcahamam", "Güdül", "Nallihan" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Cankaya",
+            "Neighbors": [ "Gölbasi", "Etimesgut", "Yenimahalle", "Altindag", "Mam ak", "Bala" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Cubuk",
+            "Neighbors": [ "Kizilcahamam", "Kahramankazan", "Pur saklar", "Akyurt" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Elmadag",
+            "Neighbors": [ "Akyurt", "Altindag", "Mam ak", "Bala" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Etimesgut",
+            "Neighbors": [ "Sincan", "Yenimahalle", "Cankaya", "Gölbasi" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Evren",
+            "Neighbors": [ "Sereflikoçhisar" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Gölbasi",
+            "Neighbors": [ "Haymana", "Bala", "Cankaya", "Etimesgut" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Güdül",
+            "Neighbors": [ "Beypazari", "Camlidere", "Kizilcahamam", "Ayas" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Haymana",
+            "Neighbors": [ "Polatli", "Gölbasi", "Bala" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Kahramankazan",
+            "Neighbors": [ "Kizilcahamam", "Cubuk", "Pur saklar", "Yenimahalle", "Sincan", "Ayas" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Kalecik",
+            "Neighbors": [ "Akyurt", "Cubuk" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Keçioren",
+            "Neighbors": [ "Yenimahalle", "Pur saklar", "Altindag" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Kizilcahamam",
+            "Neighbors": [ "Camlidere", "Güdül", "Ayas", "Kahramankazan", "Cubuk" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Mam ak",
+            "Neighbors": [ "Cankaya", "Altindag", "Elmadag", "Bala" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Nallihan",
+            "Neighbors": [ "Beypazari", "Camlidere" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Polatli",
+            "Neighbors": [ "Beypazari", "Ayas", "Sincan", "Haymana" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Pur saklar",
+            "Neighbors": [ "Kahramankazan", "Cubuk", "Akyurt", "Altindag", "Keçioren" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Sereflikoçhisar",
+            "Neighbors": [ "Evren" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Sincan",
+            "Neighbors": [ "Kahramankazan", "Yenimahalle", "Etimesgut", "Polatli", "Ayas" ],
+            "ColorId": 0
+        },
+        {
+            "Name": "Yenimahalle",
+            "Neighbors": [ "Kahramankazan", "Keçioren", "Altindag", "Cankaya", "Etimesgut", "Sincan" ],
+            "ColorId": 0
+        }
+    ]
+}
