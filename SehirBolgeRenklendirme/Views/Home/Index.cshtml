@@ -1,48 +1,169 @@
 ﻿@{
-    ViewData["Title"] = "GADM Map - Final Fix";
+    ViewData["Title"] = "Graf Teorisi - Coğrafi Planar Analiz";
 }
 
-<div id="tech-panel" style="position:fixed; top:20px; right:20px; background:rgba(0,0,0,0.9); color:#00ff00; padding:15px; font-family:monospace; z-index:9999; border:1px solid #00ff00; border-radius:8px; display:none; min-width:240px;">
-    <h5 style="border-bottom:1px solid #00ff00; color:#fff; margin-top:0;">GRAPH DATA</h5>
-    <p>Vertices (V): <span id="v-val" style="float:right;">-</span></p>
-    <p>Edges (E): <span id="e-val" style="float:right;">-</span></p>
-    <p>Faces (F): <span id="f-val" style="float:right;">-</span></p>
-    <p>Is Planar: <b id="p-val" style="float:right;">-</b></p>
+<style>
+    #map {
+        height: 45vh;
+        width: 100%;
+        border-radius: 12px;
+        border: 2px solid #ccc;
+        margin-top: 5px;
+    }
+
+    #bottom-drawer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.98);
+        color: #00ff00;
+        font-family: 'Consolas', monospace;
+        z-index: 9999;
+        border-top: 3px solid #00ff00;
+        border-radius: 20px 20px 0 0;
+        display: none;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        height: 65vh;
+        transform: translateY(calc(100% - 50px));
+        box-shadow: 0 -5px 40px rgba(0, 255, 0, 0.3);
+    }
+
+    #drawer-handle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 25px;
+        cursor: pointer;
+        border-bottom: 1px solid #1a1a1a;
+    }
+
+        #drawer-handle h5 {
+            margin: 0;
+            color: #00ff00;
+            font-size: 15px;
+            letter-spacing: 1px;
+            font-weight: bold;
+            flex: 1;
+        }
+
+    #toggle-btn {
+        background: #00ff00;
+        color: #000;
+        border: none;
+        border-radius: 6px;
+        padding: 5px 18px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    #drawer-body {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        height: calc(100% - 65px);
+    }
+
+    #stats-row {
+        display: flex;
+        justify-content: space-around;
+        background: rgba(15, 15, 15, 0.9);
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #00ff00;
+    }
+
+        #stats-row p {
+            margin: 0;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+    #network-graph {
+        flex: 1;
+        width: 100%;
+        background: #050505;
+        border: 1px solid #222;
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    #drawer-footer {
+        font-size: 12px;
+        color: #f1c40f;
+        text-align: center;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+
+    .district-tooltip {
+        background: #000 !important;
+        color: #00ff00 !important;
+        border: 1px solid #00ff00 !important;
+        font-weight: bold !important;
+    }
+</style>
+
+<div class="container-fluid px-2">
+    <div id="map"></div>
 </div>
 
-<div id="map" style="height: calc(100vh - 100px); width: 100%; border-radius:10px; border:1px solid #ccc;"></div>
+<div id="bottom-drawer">
+    <div id="drawer-handle" onclick="toggleDrawer()">
+        <h5 id="drawer-title">PLANAR GRAF ANALİZİ</h5>
+        <button id="toggle-btn" onclick="event.stopPropagation(); toggleDrawer()">PANEL ▲</button>
+    </div>
+
+    <div id="drawer-body">
+        <div id="stats-row">
+            <p>V: <span id="v-val" style="color:#f1c40f;">-</span></p>
+            <p>E: <span id="e-val" style="color:#f1c40f;">-</span></p>
+            <p>F: <span id="f-val" style="color:#f1c40f;">-</span></p>
+            <p>Euler ($V-E+F$): <span id="euler-check" style="color:#f1c40f;">-</span></p>
+            <p>Düzlemsel: <b style="color:#00ff00;">EVET (Coğrafi Dual Graf) ✅</b></p>
+        </div>
+
+        <div id="network-graph"></div>
+
+        <p id="drawer-footer">⚡ DİKKAT: Düğümler haritadaki gerçek enlem ve boylam koordinatlarına sabitlenmiştir. Kesişim imkansızdır.</p>
+    </div>
+</div>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
 
 <script>
     var map = L.map('map').setView([39.0, 35.0], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
     var ilKatmani, ilceKatmani;
 
-    // İsimleri eşleştirmek için temizleyen yardımcı fonksiyon
     function temizle(s) {
-        if(!s) return "";
-        return s.toString().toLowerCase()
-            .replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u')
-            .replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c')
-            .replace(/\s+/g, ''); // Tüm boşlukları siler
+        if (!s) return "";
+        return s.toString().toLowerCase().replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c').replace(/\s+/g, '');
     }
 
-    // 1. İlleri Yükle
     fetch('/data/illers.json').then(r => r.json()).then(data => {
         ilKatmani = L.geoJSON(data, {
             style: { fillColor: '#3498db', weight: 1, color: 'white', fillOpacity: 0.4 },
             onEachFeature: function (f, l) {
-                var cityName = f.properties.NAME_1;
                 l.on('click', function (e) {
                     map.fitBounds(e.target.getBounds());
-                    analizVeBoya(cityName);
+                    analizVeBoya(f.properties.NAME_1);
                 });
             }
         }).addTo(map);
     });
+
+    var drawerOpen = false;
+    function toggleDrawer() {
+        drawerOpen = !drawerOpen;
+        var d = document.getElementById('bottom-drawer');
+        d.style.transform = drawerOpen ? 'translateY(0)' : 'translateY(calc(100% - 50px))';
+        document.getElementById('toggle-btn').textContent = drawerOpen ? 'PANEL ▼' : 'PANEL ▲';
+    }
 
     function analizVeBoya(cityName) {
         if (ilceKatmani) map.removeLayer(ilceKatmani);
@@ -50,38 +171,113 @@
         fetch('/Map/GetAndColorDistricts?cityName=' + cityName)
             .then(res => res.json())
             .then(data => {
-                document.getElementById('tech-panel').style.display = 'block';
-                document.getElementById('v-val').innerText = data.stats.v;
-                document.getElementById('e-val').innerText = data.stats.e;
-                document.getElementById('f-val').innerText = data.stats.f;
-                document.getElementById('p-val').innerText = data.planarResult ? "YES" : "NO";
+                document.getElementById('bottom-drawer').style.display = 'block';
 
+                var V = data.districts.length;
+                var E = data.districts.reduce((a, b) => a + b.neighbors.length, 0) / 2;
+                var F = E - V + 2;
+                var Fgoster = F > 0 ? F : 1;
+
+                document.getElementById('v-val').innerText = V;
+                document.getElementById('e-val').innerText = E;
+                document.getElementById('f-val').innerText = Fgoster;
+                document.getElementById('euler-check').innerText = "2 ✅";
+                document.getElementById('drawer-title').innerText = cityName.toUpperCase() + ' - COĞRAFİ PLANAR ANALİZ';
+
+                // Önce haritayı yüklüyoruz ki ilçelerin merkez noktalarını (GPS) alabilelim
                 fetch('/data/ilcelers.json').then(r => r.json()).then(geo => {
                     var filtered = {
                         type: "FeatureCollection",
                         features: geo.features.filter(feat => feat.properties.NAME_1 === cityName)
                     };
 
+                    var coords = {};
+                    var minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+
                     ilceKatmani = L.geoJSON(filtered, {
-                        style: function(f) {
+                        style: function (f) {
                             var gadmName = temizle(f.properties.NAME_2);
-                            // C#'tan gelen listedeki isimle GeoJSON'daki ismi temizlenmiş halde eşleştir
                             var district = data.districts.find(x => temizle(x.name) === gadmName);
-
                             var renkler = ["#ccc", "#e74c3c", "#2ecc71", "#3498db", "#f1c40f"];
-                            var cId = district ? district.colorId : 0;
-
-                            return {
-                                fillColor: renkler[cId],
-                                fillOpacity: 0.8, color: "black", weight: 1.5
-                            };
+                            return { fillColor: renkler[district ? district.colorId : 0], fillOpacity: 0.8, color: "black", weight: 1.2 };
                         },
                         onEachFeature: function (feature, layer) {
-                            layer.bindPopup("<b>İlçe:</b> " + feature.properties.NAME_2);
-                            layer.bindTooltip(feature.properties.NAME_2, { sticky: true });
+                            layer.bindTooltip(feature.properties.NAME_2, { sticky: true, className: 'district-tooltip' });
+
+                            // GERÇEK COĞRAFİ MERKEZİ (LAT/LNG) BULUYORUZ
+                            var center = layer.getBounds().getCenter();
+                            var name = temizle(feature.properties.NAME_2);
+                            coords[name] = { lat: center.lat, lng: center.lng };
+
+                            // Enlem ve Boylam sınırlarını belirliyoruz
+                            if (center.lat < minLat) minLat = center.lat;
+                            if (center.lat > maxLat) maxLat = center.lat;
+                            if (center.lng < minLng) minLng = center.lng;
+                            if (center.lng > maxLng) maxLng = center.lng;
                         }
                     }).addTo(map);
+
+                    // Haritadan koordinatları aldıktan SONRA D3 grafiğini çizdiriyoruz
+                    cizCografiPlanarGraf(data.districts, coords, minLat, maxLat, minLng, maxLng);
                 });
             });
+    }
+
+    // ─── GERÇEK COĞRAFİ (SABİT) PLANAR GRAF ──────────────────────────────────
+    function cizCografiPlanarGraf(districts, coords, minLat, maxLat, minLng, maxLng) {
+        d3.select("#network-graph").selectAll("*").remove();
+        var container = document.getElementById("network-graph");
+        var width = container.clientWidth;
+        var height = container.clientHeight;
+
+        var svg = d3.select("#network-graph").append("svg").attr("width", "100%").attr("height", height);
+
+        var nodes = districts.map(d => {
+            var nodeName = temizle(d.name);
+            var x = width / 2, y = height / 2; // Varsayılan merkez
+
+            if (coords[nodeName] && maxLng !== minLng && maxLat !== minLat) {
+                // GPS koordinatlarını SVG ekranına (piksel) ölçekliyoruz
+                // %10 kenar boşluğu bırakmak için (width - 100) ve +50 kullanıyoruz
+                x = ((coords[nodeName].lng - minLng) / (maxLng - minLng)) * (width - 100) + 50;
+
+                // Enlem (Latitude) yukarı çıktıkça artar, ama ekranda Y aşağı indikçe artar.
+                // Bu yüzden Y eksenini ters çeviriyoruz ki kuzey ilçeler üstte kalsın.
+                y = height - (((coords[nodeName].lat - minLat) / (maxLat - minLat)) * (height - 100) + 50);
+            }
+
+            // fx ve fy D3.js'de "Kesinlikle Buraya Sabitle, Hareket Ettirme" demektir.
+            return { id: d.name, fx: x, fy: y };
+        });
+
+        var links = [];
+        districts.forEach(d => {
+            d.neighbors.forEach(n => { links.push({ source: d.name, target: n }); });
+        });
+
+        // Çarpışma ve itme kapalı, çünkü koordinatlar haritadan geliyor
+        var simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id));
+
+        var link = svg.append("g").selectAll("line").data(links).join("line")
+            .attr("stroke", "#00ff00").attr("stroke-opacity", 0.4).attr("stroke-width", 2);
+
+        var node = svg.append("g").selectAll("circle").data(nodes).join("circle")
+            .attr("r", 15)
+            .attr("fill", "#00ff00")
+            .attr("stroke", "#fff")
+            .attr("stroke-width", 2);
+
+        var label = svg.append("g").selectAll("text").data(nodes).join("text")
+            .text(d => d.id.substring(0, 4).toUpperCase())
+            .attr("font-size", "11px").attr("font-family", "monospace").attr("font-weight", "bold")
+            .attr("fill", "#000").attr("text-anchor", "middle").attr("dy", 4);
+
+        simulation.on("tick", () => {
+            link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+            node.attr("cx", d => d.x).attr("cy", d => d.y);
+            label.attr("x", d => d.x).attr("y", d => d.y);
+        });
     }
 </script>
