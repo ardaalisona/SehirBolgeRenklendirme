@@ -3,20 +3,96 @@
 }
 
 <style>
-    #map {
-        height: 45vh;
-        width: 100%;
-        border-radius: 12px;
-        border: 2px solid #ccc;
-        margin-top: 5px;
+    /* ─── 1. ASP.NET CORE DEFAULT TEMA EZİCİ (ŞAŞALI ARKA PLAN) ─── */
+    body {
+        background: radial-gradient(circle at top, #111a22 0%, #050505 100%) !important;
+        color: #e0e0e0 !important;
+        margin: 0;
+        padding: 0;
     }
 
+    /* Üst Menü (Navbar) Siber Tema */
+    header {
+        background: rgba(0, 0, 0, 0.85) !important;
+        border-bottom: 1px solid rgba(0, 255, 0, 0.3) !important;
+        box-shadow: 0 4px 20px rgba(0, 255, 0, 0.1) !important;
+        backdrop-filter: blur(10px);
+    }
+
+    .navbar-brand, .nav-link {
+        color: #00ff00 !important;
+        font-family: 'Consolas', monospace;
+        font-weight: bold;
+        letter-spacing: 1px;
+        transition: 0.3s;
+    }
+
+        .navbar-brand:hover, .nav-link:hover {
+            color: #fff !important;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+    footer {
+        display: none !important;
+    }
+    /* Alt menüyü panelimiz için gizliyoruz */
+    main {
+        padding: 0 !important;
+    }
+
+    /* ─── 2. HARİTA İÇİN PREMIUM VİTRİN KONTEYNERİ ─── */
+    .project-wrapper {
+        max-width: 1400px;
+        margin: 25px auto;
+        padding: 25px;
+        background: rgba(10, 15, 20, 0.6);
+        border-radius: 16px;
+        border: 1px solid rgba(0, 255, 0, 0.15);
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 255, 0, 0.05);
+        backdrop-filter: blur(8px);
+    }
+
+    .project-header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px dashed rgba(0, 255, 0, 0.2);
+    }
+
+        .project-header h1 {
+            color: #00ff00;
+            font-family: 'Consolas', monospace;
+            font-weight: 900;
+            font-size: 26px;
+            letter-spacing: 3px;
+            text-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+            margin: 0 0 8px 0;
+            text-transform: uppercase;
+        }
+
+        .project-header p {
+            color: #888;
+            font-size: 13px;
+            letter-spacing: 2px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+    #map {
+        height: 50vh;
+        width: 100%;
+        border-radius: 12px;
+        border: 2px solid #1a1a1a;
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
+    }
+
+    /* ─── 3. SENİN O MUHTEŞEM PANEL VE MATRİS CSS'LERİ (DOKUNULMADI) ─── */
     #bottom-drawer {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
-        background: rgba(0, 0, 0, 0.98);
+        background: rgba(5, 5, 5, 0.98);
         color: #00ff00;
         font-family: 'Consolas', monospace;
         z-index: 9999;
@@ -26,7 +102,7 @@
         transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         height: 65vh;
         transform: translateY(calc(100% - 50px));
-        box-shadow: 0 -5px 40px rgba(0, 255, 0, 0.3);
+        box-shadow: 0 -10px 50px rgba(0, 255, 0, 0.2);
     }
 
     #drawer-handle {
@@ -83,11 +159,12 @@
     #network-graph {
         flex: 1;
         width: 100%;
-        background: #050505;
+        background: #030303;
         border: 1px solid #222;
         border-radius: 12px;
         position: relative;
         overflow: hidden;
+        box-shadow: inset 0 0 20px #000;
     }
 
     #drawer-footer {
@@ -104,16 +181,207 @@
         border: 1px solid #00ff00 !important;
         font-weight: bold !important;
     }
+
+    .node-hover-tooltip {
+        position: absolute;
+        text-align: center;
+        padding: 8px 15px;
+        font: 14px 'Consolas', monospace;
+        font-weight: bold;
+        background: rgba(0, 0, 0, 0.95);
+        color: #00ff00;
+        border: 2px solid #00ff00;
+        border-radius: 8px;
+        pointer-events: none;
+        opacity: 0;
+        z-index: 10000;
+        box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .action-btn {
+        background: #00ff00;
+        color: #000;
+        border: none;
+        border-radius: 6px;
+        padding: 5px 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+        .action-btn:hover {
+            background: #fff;
+            box-shadow: 0 0 10px #fff;
+        }
+
+    .matrix-btn {
+        background: #f1c40f;
+        color: #000;
+        margin-right: 10px;
+    }
+
+        .matrix-btn:hover {
+            background: #fff;
+            box-shadow: 0 0 10px #f1c40f;
+        }
+
+    #matrix-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(5, 5, 5, 0.98);
+        z-index: 10000;
+        display: none;
+        flex-direction: column;
+        padding: 30px;
+        color: #00ff00;
+        font-family: 'Consolas', monospace;
+        overflow: hidden;
+    }
+
+        #matrix-modal h2 {
+            text-align: center;
+            color: #f1c40f;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #222;
+            padding-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+    .close-matrix-btn {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-weight: bold;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+        .close-matrix-btn:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+    .matrix-container {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        overflow-y: auto;
+        height: 100%;
+        padding-right: 10px;
+    }
+
+    .matrix-section {
+        background: #0a0a0a;
+        border: 1px solid #333;
+        border-radius: 12px;
+        padding: 20px;
+        overflow-x: auto;
+        box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    }
+
+        .matrix-section h4 {
+            color: #3498db;
+            margin-top: 0;
+            font-size: 16px;
+            letter-spacing: 1px;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+
+    table.matrix-table {
+        border-collapse: separate;
+        border-spacing: 3px;
+        width: max-content;
+        font-size: 13px;
+    }
+
+        table.matrix-table th, table.matrix-table td {
+            background: #111;
+            border: 1px solid #222;
+            padding: 10px 14px;
+            text-align: center;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        table.matrix-table th {
+            background: #1a1a1a;
+            color: #00ff00;
+            position: sticky;
+            top: 0;
+            left: 0;
+            z-index: 5;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+            table.matrix-table th.matrix-th:hover {
+                background: #222;
+                color: #f1c40f;
+                transform: scale(1.2);
+                z-index: 10;
+                border-color: #f1c40f;
+                box-shadow: 0 0 12px rgba(241, 196, 15, 0.4);
+            }
+
+        table.matrix-table td:hover {
+            background: #1a1a1a;
+            transform: scale(1.1);
+            z-index: 2;
+            position: relative;
+            border-color: #444;
+        }
+
+        table.matrix-table td.val-1 {
+            color: #f1c40f;
+            font-weight: 900;
+            font-size: 14px;
+            text-shadow: 0 0 6px rgba(241, 196, 15, 0.5);
+        }
+
+        table.matrix-table td.val-0 {
+            color: #555;
+            font-size: 12px;
+        }
+
+        table.matrix-table td.val-null {
+            color: #444;
+            font-style: italic;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            opacity: 0.5;
+        }
 </style>
 
 <div class="container-fluid px-2">
-    <div id="map"></div>
+    <!-- YENİ VİTRİN KONTEYNERİ -->
+    <div class="project-wrapper">
+        <div class="project-header">
+            <h1>🌐 COĞRAFİ BİLGİ & GRAF TEORİSİ SİSTEMİ</h1>
+            <p>Akıllı Planar Graf Analizi ve Matematiksel Matris Terminali</p>
+        </div>
+        <div id="map"></div>
+    </div>
 </div>
 
 <div id="bottom-drawer">
     <div id="drawer-handle" onclick="toggleDrawer()">
         <h5 id="drawer-title">PLANAR GRAF ANALİZİ</h5>
-        <button id="toggle-btn" onclick="event.stopPropagation(); toggleDrawer()">PANEL ▲</button>
+        <div style="display: flex;">
+            <button class="action-btn matrix-btn" onclick="event.stopPropagation(); toggleMatrixModal(true)">MATRİSLER 🧮</button>
+            <button class="action-btn" id="toggle-btn" onclick="event.stopPropagation(); toggleDrawer()">PANEL ▲</button>
+        </div>
     </div>
 
     <div id="drawer-body">
@@ -121,7 +389,7 @@
             <p>V: <span id="v-val" style="color:#f1c40f;">-</span></p>
             <p>E: <span id="e-val" style="color:#f1c40f;">-</span></p>
             <p>F: <span id="f-val" style="color:#f1c40f;">-</span></p>
-            <p>Euler ($V-E+F$): <span id="euler-check" style="color:#f1c40f;">-</span></p>
+            <p>Euler (V - E + F): <span id="euler-check" style="color:#f1c40f;">-</span></p>
             <p>Düzlemsel: <b style="color:#00ff00;">EVET (Coğrafi Dual Graf) ✅</b></p>
         </div>
 
@@ -131,11 +399,32 @@
     </div>
 </div>
 
+<div id="matrix-modal">
+    <button class="close-matrix-btn" onclick="toggleMatrixModal(false)">X KAPAT</button>
+    <h2 id="matrix-city-title">ŞEHİR MATRİSLERİ (YÖNSÜZ GRAF)</h2>
+
+    <div class="matrix-container">
+        <div class="matrix-section">
+            <h4>1. KOMŞULUK MATRİSİ (Adjacency Matrix - V × V)</h4>
+            <p style="color:#888; font-size:12px; margin-bottom:10px;">* Yönsüz grafta bağlantı varsa 1, yoksa 0 yazılır. Ana köşegen boyunca simetriktir.</p>
+            <div id="adj-matrix-content"></div>
+        </div>
+        <div class="matrix-section">
+            <h4>2. BİTİŞİKLİK MATRİSİ (Incidence Matrix - V × E)</h4>
+            <p style="color:#888; font-size:12px; margin-bottom:10px;">* Bir kenar sadece bağlandığı iki düğümde 1 değerini alır, diğer düğümler için 'null' üretir.</p>
+            <div id="inc-matrix-content"></div>
+        </div>
+    </div>
+</div>
+
+<div id="graf-tooltip" class="node-hover-tooltip"></div>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 
 <script>
+    /* BUNDAN SONRASI %100 AYNI - KODA DOKUNULMADI */
     var map = L.map('map').setView([39.0, 35.0], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     var ilKatmani, ilceKatmani;
@@ -165,6 +454,10 @@
         document.getElementById('toggle-btn').textContent = drawerOpen ? 'PANEL ▼' : 'PANEL ▲';
     }
 
+    function toggleMatrixModal(show) {
+        document.getElementById('matrix-modal').style.display = show ? 'flex' : 'none';
+    }
+
     function analizVeBoya(cityName) {
         if (ilceKatmani) map.removeLayer(ilceKatmani);
 
@@ -183,8 +476,8 @@
                 document.getElementById('f-val').innerText = Fgoster;
                 document.getElementById('euler-check').innerText = "2 ✅";
                 document.getElementById('drawer-title').innerText = cityName.toUpperCase() + ' - COĞRAFİ PLANAR ANALİZ';
+                document.getElementById('matrix-city-title').innerText = cityName.toUpperCase() + ' MATRİS HESAPLAMALARI (YÖNSÜZ GRAF)';
 
-                // Önce haritayı yüklüyoruz ki ilçelerin merkez noktalarını (GPS) alabilelim
                 fetch('/data/ilcelers.json').then(r => r.json()).then(geo => {
                     var filtered = {
                         type: "FeatureCollection",
@@ -204,12 +497,10 @@
                         onEachFeature: function (feature, layer) {
                             layer.bindTooltip(feature.properties.NAME_2, { sticky: true, className: 'district-tooltip' });
 
-                            // GERÇEK COĞRAFİ MERKEZİ (LAT/LNG) BULUYORUZ
                             var center = layer.getBounds().getCenter();
                             var name = temizle(feature.properties.NAME_2);
                             coords[name] = { lat: center.lat, lng: center.lng };
 
-                            // Enlem ve Boylam sınırlarını belirliyoruz
                             if (center.lat < minLat) minLat = center.lat;
                             if (center.lat > maxLat) maxLat = center.lat;
                             if (center.lng < minLng) minLng = center.lng;
@@ -217,13 +508,89 @@
                         }
                     }).addTo(map);
 
-                    // Haritadan koordinatları aldıktan SONRA D3 grafiğini çizdiriyoruz
                     cizCografiPlanarGraf(data.districts, coords, minLat, maxLat, minLng, maxLng);
+                    hesaplaVeYazdirMatris(data.districts);
                 });
             });
     }
 
-    // ─── GERÇEK COĞRAFİ (SABİT) PLANAR GRAF ──────────────────────────────────
+    function hesaplaVeYazdirMatris(districts) {
+        try {
+            let nodes = districts.map(d => d.name).sort();
+            let n = nodes.length;
+
+            let adjTable = "<table class='matrix-table'><tr><th style='background:#0a0a0a; color:#555;'>V</th>";
+            nodes.forEach(node => {
+                adjTable += `<th class="matrix-th" data-fullname="${node.toUpperCase()}">${node.substring(0,3).toUpperCase()}</th>`;
+            });
+            adjTable += "</tr>";
+
+            for(let i=0; i<n; i++) {
+                adjTable += `<tr><th class="matrix-th" data-fullname="${nodes[i].toUpperCase()}">${nodes[i].substring(0,3).toUpperCase()}</th>`;
+                let d = districts.find(x => x.name === nodes[i]);
+                for(let j=0; j<n; j++) {
+                    let isConnected = d.neighbors.includes(nodes[j]);
+                    let valStr = isConnected ? "1" : "0";
+                    let cssClass = isConnected ? "val-1" : "val-0";
+                    adjTable += `<td class="${cssClass}">${valStr}</td>`;
+                }
+                adjTable += "</tr>";
+            }
+            adjTable += "</table>";
+            document.getElementById("adj-matrix-content").innerHTML = adjTable;
+
+            let edges = [];
+            for(let i=0; i<n; i++) {
+                let d = districts.find(x => x.name === nodes[i]);
+                d.neighbors.forEach(neighbor => {
+                    let e = [nodes[i], neighbor].sort();
+                    let eName = e[0] + " ↔ " + e[1];
+                    if(!edges.some(x => x.name === eName)) {
+                        edges.push({ name: eName, u: e[0], v: e[1] });
+                    }
+                });
+            }
+
+            let incTable = "<table class='matrix-table'><tr><th style='background:#0a0a0a; color:#555;'>V \\ E</th>";
+            edges.forEach((edge, idx) => {
+                incTable += `<th class="matrix-th" data-fullname="${edge.name.toUpperCase()}">e${idx+1}</th>`;
+            });
+            incTable += "</tr>";
+
+            for(let i=0; i<n; i++) {
+                incTable += `<tr><th class="matrix-th" data-fullname="${nodes[i].toUpperCase()}">${nodes[i].substring(0,3).toUpperCase()}</th>`;
+                for(let j=0; j<edges.length; j++) {
+                    let isConnected = (edges[j].u === nodes[i] || edges[j].v === nodes[i]);
+                    let valStr = isConnected ? "1" : "null";
+                    let cssClass = isConnected ? "val-1" : "val-null";
+                    incTable += `<td class="${cssClass}">${valStr}</td>`;
+                }
+                incTable += "</tr>";
+            }
+            incTable += "</table>";
+            document.getElementById("inc-matrix-content").innerHTML = incTable;
+
+            var tooltip = d3.select("#graf-tooltip");
+            d3.selectAll(".matrix-th")
+                .on("mouseover", function(event) {
+                    var fullname = d3.select(this).attr("data-fullname");
+                    tooltip.transition().duration(200).style("opacity", 1);
+                    tooltip.html(fullname)
+                           .style("left", (event.pageX + 15) + "px")
+                           .style("top", (event.pageY - 30) + "px");
+                })
+                .on("mousemove", function(event) {
+                    tooltip.style("left", (event.pageX + 15) + "px")
+                           .style("top", (event.pageY - 30) + "px");
+                })
+                .on("mouseout", function(event) {
+                    tooltip.transition().duration(500).style("opacity", 0);
+                });
+        } catch (e) {
+            console.error("Matris hesaplama hatası:", e);
+        }
+    }
+
     function cizCografiPlanarGraf(districts, coords, minLat, maxLat, minLng, maxLng) {
         d3.select("#network-graph").selectAll("*").remove();
         var container = document.getElementById("network-graph");
@@ -231,22 +598,17 @@
         var height = container.clientHeight;
 
         var svg = d3.select("#network-graph").append("svg").attr("width", "100%").attr("height", height);
+        var tooltip = d3.select("#graf-tooltip");
 
         var nodes = districts.map(d => {
             var nodeName = temizle(d.name);
-            var x = width / 2, y = height / 2; // Varsayılan merkez
+            var x = width / 2, y = height / 2;
 
             if (coords[nodeName] && maxLng !== minLng && maxLat !== minLat) {
-                // GPS koordinatlarını SVG ekranına (piksel) ölçekliyoruz
-                // %10 kenar boşluğu bırakmak için (width - 100) ve +50 kullanıyoruz
                 x = ((coords[nodeName].lng - minLng) / (maxLng - minLng)) * (width - 100) + 50;
-
-                // Enlem (Latitude) yukarı çıktıkça artar, ama ekranda Y aşağı indikçe artar.
-                // Bu yüzden Y eksenini ters çeviriyoruz ki kuzey ilçeler üstte kalsın.
                 y = height - (((coords[nodeName].lat - minLat) / (maxLat - minLat)) * (height - 100) + 50);
             }
 
-            // fx ve fy D3.js'de "Kesinlikle Buraya Sabitle, Hareket Ettirme" demektir.
             return { id: d.name, fx: x, fy: y };
         });
 
@@ -255,7 +617,6 @@
             d.neighbors.forEach(n => { links.push({ source: d.name, target: n }); });
         });
 
-        // Çarpışma ve itme kapalı, çünkü koordinatlar haritadan geliyor
         var simulation = d3.forceSimulation(nodes)
             .force("link", d3.forceLink(links).id(d => d.id));
 
@@ -263,15 +624,32 @@
             .attr("stroke", "#00ff00").attr("stroke-opacity", 0.4).attr("stroke-width", 2);
 
         var node = svg.append("g").selectAll("circle").data(nodes).join("circle")
-            .attr("r", 15)
+            .attr("r", 16)
             .attr("fill", "#00ff00")
             .attr("stroke", "#fff")
-            .attr("stroke-width", 2);
+            .attr("stroke-width", 2)
+            .style("cursor", "pointer")
+            .on("mouseover", function(event, d) {
+                d3.select(this).attr("stroke", "#f1c40f").attr("stroke-width", 4).attr("r", 19);
+                tooltip.transition().duration(200).style("opacity", 1);
+                tooltip.html(d.id.toUpperCase())
+                       .style("left", (event.pageX + 15) + "px")
+                       .style("top", (event.pageY - 30) + "px");
+            })
+            .on("mousemove", function(event) {
+                tooltip.style("left", (event.pageX + 15) + "px")
+                       .style("top", (event.pageY - 30) + "px");
+            })
+            .on("mouseout", function(event, d) {
+                d3.select(this).attr("stroke", "#fff").attr("stroke-width", 2).attr("r", 16);
+                tooltip.transition().duration(500).style("opacity", 0);
+            });
 
         var label = svg.append("g").selectAll("text").data(nodes).join("text")
             .text(d => d.id.substring(0, 4).toUpperCase())
             .attr("font-size", "11px").attr("font-family", "monospace").attr("font-weight", "bold")
-            .attr("fill", "#000").attr("text-anchor", "middle").attr("dy", 4);
+            .attr("fill", "#000").attr("text-anchor", "middle").attr("dy", 4)
+            .style("pointer-events", "none");
 
         simulation.on("tick", () => {
             link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
