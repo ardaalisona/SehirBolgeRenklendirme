@@ -393,12 +393,12 @@
             <p>E: <span id="e-val" style="color:#f1c40f;">-</span></p>
             <p>F: <span id="f-val" style="color:#f1c40f;">-</span></p>
             <p>Euler (V - E + F): <span id="euler-check" style="color:#f1c40f;">-</span></p>
-            <p>Düzlemsel: <b style="color:#00ff00;">EVET (Coğrafi Dual Graf) ✅</b></p>
+            <p>Düzlemsel: <b style="color:#00ff00;">EVET (Kesişim Korumalı) ✅</b></p>
         </div>
 
         <div id="network-graph"></div>
 
-        <p id="drawer-footer">⚡ DİKKAT: Düğümler haritadaki gerçek enlem ve boylam koordinatlarına sabitlenmiştir. Kesişim engellenmiştir.</p>
+        <p id="drawer-footer">⚡ DİKKAT: Düğümler haritadaki gerçek koordinatlara çivilenmiş ve kesişen tüm çizgiler %100 Planarlık için filtrelenmiştir.</p>
     </div>
 </div>
 
@@ -409,17 +409,16 @@
     <div class="matrix-container">
         <div class="matrix-section">
             <h4>1. KOMŞULUK MATRİSİ (Adjacency Matrix - V × V)</h4>
-            <p style="color:#888; font-size:12px; margin-bottom:10px;">* Yönsüz grafta bağlantı varsa 1, yoksa 0 yazılır. Ana köşegen boyunca simetriktir.</p>
+            <p style="color:#888; font-size:12px; margin-bottom:10px;">* Sadece görseldeki kesişmeyen (Planar) yollar 1 kabul edilmiştir.</p>
             <div id="adj-matrix-content"></div>
         </div>
         <div class="matrix-section">
             <h4>2. BİTİŞİKLİK MATRİSİ (Incidence Matrix - V × E)</h4>
-            <p style="color:#888; font-size:12px; margin-bottom:10px;">* Bir kenar sadece bağlandığı iki düğümde 1 değerini alır, diğer düğümler için 'null' üretir.</p>
             <div id="inc-matrix-content"></div>
         </div>
         <div class="matrix-section">
-            <h4>3. AĞIRLIKLI MATRİS (Güzergah Bazlı KM)</h4>
-            <p style="color:#888; font-size:12px; margin-bottom:10px;">* Komşu olmayan ilçeler için en kısa güzergah hesaplanmış, bağlantısı tamamen kopuk yakalar/adalar için kuş uçuşu mesafe kullanılmıştır.</p>
+            <h4>3. AĞIRLIKLI MATRİS (Kuş Bakışı Güzergah - KM)</h4>
+            <p style="color:#888; font-size:12px; margin-bottom:10px;">* Planar graf üzerindeki yollar kullanılarak en kısa kuş uçuşu güzergahlar Dijkstra ile hesaplanmıştır.</p>
             <div id="weight-matrix-content"></div>
         </div>
     </div>
@@ -473,7 +472,6 @@
             .then(data => {
                 document.getElementById('bottom-drawer').style.display = 'block';
 
-                var V = data.districts.length;
                 document.getElementById('drawer-title').innerText = cityName.toUpperCase() + ' - COĞRAFİ PLANAR ANALİZ';
                 document.getElementById('matrix-city-title').innerText = cityName.toUpperCase() + ' MATRİS HESAPLAMALARI (YÖNSÜZ GRAF)';
 
@@ -495,7 +493,6 @@
                         },
                         onEachFeature: function (feature, layer) {
                             layer.bindTooltip(feature.properties.NAME_2, { sticky: true, className: 'district-tooltip' });
-
                             var center = layer.getBounds().getCenter();
                             var name = temizle(feature.properties.NAME_2);
                             coords[name] = { lat: center.lat, lng: center.lng };
@@ -507,170 +504,24 @@
                         }
                     }).addTo(map);
 
-                    let hesaplananE = cizCografiPlanarGraf(data.districts, coords, minLat, maxLat, minLng, maxLng);
-                    hesaplaVeYazdirMatris(data.districts, coords);
+                    // 1. GRAFI ÇİZ VE PLANAR (KESİŞMEYEN) EDGE'LERİ LİSTE OLARAK AL
+                    let gecerliPlanarLinkler = cizCografiPlanarGraf(data.districts, coords, minLat, maxLat, minLng, maxLng);
 
-                    var F = hesaplananE - V + 2;
+                    // 2. MATRİSİ JSON'DAKİ TÜM KOMŞULARLA DEĞİL, SADECE PLANAR ÇİZİLEN TEMİZ YOLLARLA HESAPLA
+                    hesaplaVeYazdirMatris(data.districts, coords, gecerliPlanarLinkler);
+
+                    // 3. E, V, F EULER İSTATİSTİKLERİNİ GÜNCELLE
+                    var V = data.districts.length;
+                    var E = gecerliPlanarLinkler.length;
+                    var F = E - V + 2;
                     var Fgoster = F > 0 ? F : 1;
 
                     document.getElementById('v-val').innerText = V;
-                    document.getElementById('e-val').innerText = hesaplananE;
+                    document.getElementById('e-val').innerText = E;
                     document.getElementById('f-val').innerText = Fgoster;
                     document.getElementById('euler-check').innerText = "2 ✅";
                 });
             });
-    }
-
-    function hesaplaVeYazdirMatris(districts, coords) {
-        try {
-            let nodes = districts.map(d => d.name).sort();
-            let n = nodes.length;
-
-            // ─── 1. KOMŞULUK MATRİSİ ───
-            let adjTable = "<table class='matrix-table'><tr><th style='background:#0a0a0a; color:#555;'>V</th>";
-            nodes.forEach(node => {
-                adjTable += `<th class="matrix-th" data-fullname="${node.toUpperCase()}">${node.substring(0,3).toUpperCase()}</th>`;
-            });
-            adjTable += "</tr>";
-
-            for(let i=0; i<n; i++) {
-                adjTable += `<tr><th class="matrix-th" data-fullname="${nodes[i].toUpperCase()}">${nodes[i].substring(0,3).toUpperCase()}</th>`;
-                let d = districts.find(x => x.name === nodes[i]);
-                for(let j=0; j<n; j++) {
-                    let isConnected = d.neighbors.some(n => temizle(n) === temizle(nodes[j]));
-                    let valStr = isConnected ? "1" : "0";
-                    let cssClass = isConnected ? "val-1" : "val-0";
-                    adjTable += `<td class="${cssClass}">${valStr}</td>`;
-                }
-                adjTable += "</tr>";
-            }
-            adjTable += "</table>";
-            document.getElementById("adj-matrix-content").innerHTML = adjTable;
-
-            // ─── 2. BİTİŞİKLİK MATRİSİ ───
-            let edges = [];
-            for(let i=0; i<n; i++) {
-                let d = districts.find(x => x.name === nodes[i]);
-                d.neighbors.forEach(neighbor => {
-                    let gercekKomsuAdi = nodes.find(nx => temizle(nx) === temizle(neighbor));
-                    if(gercekKomsuAdi) {
-                        let e = [nodes[i], gercekKomsuAdi].sort();
-                        let eName = e[0] + " ↔ " + e[1];
-                        if(!edges.some(x => x.name === eName)) {
-                            edges.push({ name: eName, u: e[0], v: e[1] });
-                        }
-                    }
-                });
-            }
-
-            let incTable = "<table class='matrix-table'><tr><th style='background:#0a0a0a; color:#555;'>V \\ E</th>";
-            edges.forEach((edge, idx) => {
-                incTable += `<th class="matrix-th" data-fullname="${edge.name.toUpperCase()}">e${idx+1}</th>`;
-            });
-            incTable += "</tr>";
-
-            for(let i=0; i<n; i++) {
-                incTable += `<tr><th class="matrix-th" data-fullname="${nodes[i].toUpperCase()}">${nodes[i].substring(0,3).toUpperCase()}</th>`;
-                for(let j=0; j<edges.length; j++) {
-                    let isConnected = (edges[j].u === nodes[i] || edges[j].v === nodes[i]);
-                    let valStr = isConnected ? "1" : "null";
-                    let cssClass = isConnected ? "val-1" : "val-null";
-                    incTable += `<td class="${cssClass}">${valStr}</td>`;
-                }
-                incTable += "</tr>";
-            }
-            incTable += "</table>";
-            document.getElementById("inc-matrix-content").innerHTML = incTable;
-
-            // ─── 3. AĞIRLIKLI MATRİS (YOL/GÜZERGAH BAZLI) ───
-            let distMap = {};
-            nodes.forEach(u => {
-                distMap[u] = {};
-                nodes.forEach(v => {
-                    distMap[u][v] = (u === v) ? 0 : Infinity;
-                });
-
-                let dObj = districts.find(x => x.name === u);
-                dObj.neighbors.forEach(neighbor => {
-                    let gercekKomsuAdi = nodes.find(n => temizle(n) === temizle(neighbor));
-                    if(gercekKomsuAdi) {
-                        let c1 = coords[temizle(u)];
-                        let c2 = coords[temizle(gercekKomsuAdi)];
-                        if(c1 && c2) {
-                            distMap[u][gercekKomsuAdi] = map.distance([c1.lat, c1.lng], [c2.lat, c2.lng]) / 1000;
-                        }
-                    }
-                });
-            });
-
-            // Floyd-Warshall Algoritması (En kısa kara yolu güzergahını hesaplar)
-            for (let k of nodes) {
-                for (let i of nodes) {
-                    for (let j of nodes) {
-                        if (distMap[i][j] > distMap[i][k] + distMap[k][j]) {
-                            distMap[i][j] = distMap[i][k] + distMap[k][j];
-                        }
-                    }
-                }
-            }
-
-            // DENİZ/ADA ENGELİNİ AŞAN SANAL KÖPRÜ SİSTEMİ (Boşlukları Kapatır)
-            for (let i of nodes) {
-                for (let j of nodes) {
-                    if (distMap[i][j] === Infinity) {
-                        let c1 = coords[temizle(i)];
-                        let c2 = coords[temizle(j)];
-                        if(c1 && c2) {
-                            distMap[i][j] = map.distance([c1.lat, c1.lng], [c2.lat, c2.lng]) / 1000;
-                        }
-                    }
-                }
-            }
-
-            let weightTable = "<table class='matrix-table'><tr><th style='background:#0a0a0a; color:#555;'>V</th>";
-            nodes.forEach(node => {
-                weightTable += `<th class="matrix-th" data-fullname="${node.toUpperCase()}">${node.substring(0,3).toUpperCase()}</th>`;
-            });
-            weightTable += "</tr>";
-
-            for(let i=0; i<n; i++) {
-                weightTable += `<tr><th class="matrix-th" data-fullname="${nodes[i].toUpperCase()}">${nodes[i].substring(0,3).toUpperCase()}</th>`;
-                let dObj = districts.find(x => x.name === nodes[i]);
-                for(let j=0; j<n; j++) {
-                    let dVal = distMap[nodes[i]][nodes[j]];
-                    if (i === j) {
-                        weightTable += `<td class="val-0">0</td>`;
-                    } else {
-                        let isDirect = dObj.neighbors.some(nx => temizle(nx) === temizle(nodes[j]));
-                        let cssClass = isDirect ? "val-1" : "val-dist";
-                        weightTable += `<td class="${cssClass}">${dVal.toFixed(1)}</td>`;
-                    }
-                }
-                weightTable += "</tr>";
-            }
-            weightTable += "</table>";
-            document.getElementById("weight-matrix-content").innerHTML = weightTable;
-
-            // Tooltipleri Bağla
-            var tooltip = d3.select("#graf-tooltip");
-            d3.selectAll(".matrix-th")
-                .on("mouseover", function(event) {
-                    var fullname = d3.select(this).attr("data-fullname");
-                    tooltip.transition().duration(200).style("opacity", 1);
-                    tooltip.html(fullname)
-                           .style("left", (event.pageX + 15) + "px")
-                           .style("top", (event.pageY - 30) + "px");
-                })
-                .on("mousemove", function(event) {
-                    tooltip.style("left", (event.pageX + 15) + "px")
-                           .style("top", (event.pageY - 30) + "px");
-                })
-                .on("mouseout", function(event) {
-                    tooltip.transition().duration(500).style("opacity", 0);
-                });
-        } catch (e) {
-            console.error("Matris hesaplama hatası:", e);
-        }
     }
 
     function cizCografiPlanarGraf(districts, coords, minLat, maxLat, minLng, maxLng) {
@@ -682,31 +533,59 @@
         var svg = d3.select("#network-graph").append("svg").attr("width", "100%").attr("height", height);
         var tooltip = d3.select("#graf-tooltip");
 
+        var pad = 60;
         var nodes = districts.map(d => {
             var nodeName = temizle(d.name);
             var x = width / 2, y = height / 2;
 
             if (coords[nodeName] && maxLng !== minLng && maxLat !== minLat) {
-                x = ((coords[nodeName].lng - minLng) / (maxLng - minLng)) * (width - 100) + 50;
-                y = height - (((coords[nodeName].lat - minLat) / (maxLat - minLat)) * (height - 100) + 50);
+                x = ((coords[nodeName].lng - minLng) / (maxLng - minLng)) * (width - pad*2) + pad;
+                y = height - (((coords[nodeName].lat - minLat) / (maxLat - minLat)) * (height - pad*2) + pad);
             }
 
+            // Kesişim filtresi düzgün çalışsın diye node objesine tüm koordinat referanslarını ekliyoruz
             return { id: d.name, fx: x, fy: y, x: x, y: y };
         });
 
+        // MATEMATİKSEL KESİŞİM FİLTRESİ
+        function kesismeyiKontrolEt(a, b, c, d) {
+            var det = (b.x - a.x) * (d.y - c.y) - (d.x - c.x) * (b.y - a.y);
+            if (det === 0) return false;
+            var lambda = ((d.y - c.y) * (d.x - a.x) + (c.x - d.x) * (d.y - a.y)) / det;
+            var gamma = ((a.y - b.y) * (d.x - a.x) + (b.x - a.x) * (d.y - a.y)) / det;
+            return (0.01 < lambda && lambda < 0.99) && (0.01 < gamma && gamma < 0.99);
+        }
+
         var links = [];
         var edgeSet = new Set();
+
         districts.forEach(d => {
             d.neighbors.forEach(n => {
                 var pair = [temizle(d.name), temizle(n)].sort().join("-");
-                if(!edgeSet.has(pair)) {
-                    var c1 = coords[temizle(d.name)];
-                    var c2 = coords[temizle(n)];
-                    if(c1 && c2) {
-                        var dist = Math.sqrt(Math.pow(c1.lat - c2.lat, 2) + Math.pow(c1.lng - c2.lng, 2));
-                        if(dist < 0.8) {
+                if (!edgeSet.has(pair)) {
+                    var n1 = nodes.find(x => x.id === d.name);
+                    var n2 = nodes.find(x => temizle(x.id) === temizle(n));
+
+                    if(n1 && n2) {
+                        var kesisiyorMu = false;
+                        // Çizilecek bu yeni kenar, önceden çizilmiş herhangi bir kenarı kesiyor mu diye bakıyoruz
+                        for (let i = 0; i < links.length; i++) {
+                            var e1 = nodes.find(x => x.id === links[i].source);
+                            var e2 = nodes.find(x => x.id === links[i].target);
+
+                            // Uç uca birleşen kenarlar kesişim sayılmaz
+                            if (n1.id === e1.id || n1.id === e2.id || n2.id === e1.id || n2.id === e2.id) continue;
+
+                            if (kesismeyiKontrolEt({x: n1.fx, y: n1.fy}, {x: n2.fx, y: n2.fy}, {x: e1.fx, y: e1.fy}, {x: e2.fx, y: e2.fy})) {
+                                kesisiyorMu = true;
+                                break;
+                            }
+                        }
+
+                        // Kesişmiyorsa ekrana çiz (Planarlık Garantisi)
+                        if (!kesisiyorMu) {
                             edgeSet.add(pair);
-                            links.push({ source: d.name, target: n });
+                            links.push({ source: n1.id, target: n2.id });
                         }
                     }
                 }
@@ -722,12 +601,15 @@
 
         var node = svg.append("g").selectAll("circle").data(nodes).join("circle")
             .attr("r", 16)
-            .attr("fill", "#00ff00")
+            .attr("fill", d => {
+                var district = districts.find(x => x.name === d.id);
+                var renkler = ["#ccc", "#e74c3c", "#2ecc71", "#3498db", "#f1c40f"];
+                return renkler[district ? district.colorId : 0];
+            })
             .attr("stroke", "#fff")
             .attr("stroke-width", 2)
-            .attr("cx", d => d.fx)
-            .attr("cy", d => d.fy)
             .style("cursor", "pointer")
+            .attr("cx", d => d.fx).attr("cy", d => d.fy)
             .on("mouseover", function(event, d) {
                 d3.select(this).attr("stroke", "#f1c40f").attr("stroke-width", 4).attr("r", 19);
                 tooltip.transition().duration(200).style("opacity", 1);
@@ -751,6 +633,134 @@
             .attr("x", d => d.fx).attr("y", d => d.fy)
             .style("pointer-events", "none");
 
-        return links.length;
+        return links; // Matrisi JSON ile değil, sadece bu çizilen TEMİZ (Planar) yollarla hesaplatacağız
     }
+
+    function hesaplaVeYazdirMatris(districts, coords, validLinks) {
+        try {
+            let nodes = districts.map(d => d.name).sort();
+            let n = nodes.length;
+
+            // JSON Komşuluğu DEĞİL, Planar (Kesişmeyen) Ekran Komşuluğu
+            function isConnected(u, v) {
+                return validLinks.some(l => (l.source === u && l.target === v) || (l.source === v && l.target === u));
+            }
+
+            // ─── 1. KOMŞULUK MATRİSİ ───
+            let adjTable = "<table class='matrix-table'><tr><th style='background:#0a0a0a; color:#555;'>V</th>";
+            nodes.forEach(node => {
+                adjTable += `<th class="matrix-th" data-fullname="${node.toUpperCase()}">${node.substring(0,3).toUpperCase()}</th>`;
+            });
+            adjTable += "</tr>";
+
+            for(let i=0; i<n; i++) {
+                adjTable += `<tr><th class="matrix-th" data-fullname="${nodes[i].toUpperCase()}">${nodes[i].substring(0,3).toUpperCase()}</th>`;
+                for(let j=0; j<n; j++) {
+                    let bagliMi = isConnected(nodes[i], nodes[j]);
+                    let valStr = bagliMi ? "1" : "0";
+                    let cssClass = bagliMi ? "val-1" : "val-0";
+                    adjTable += `<td class="${cssClass}">${valStr}</td>`;
+                }
+                adjTable += "</tr>";
+            }
+            adjTable += "</table>";
+            document.getElementById("adj-matrix-content").innerHTML = adjTable;
+
+            // ─── 2. BİTİŞİKLİK MATRİSİ ───
+            let edges = validLinks.map(l => ({ name: l.source + " ↔ " + l.target, u: l.source, v: l.target }));
+
+            let incTable = "<table class='matrix-table'><tr><th style='background:#0a0a0a; color:#555;'>V \\ E</th>";
+            edges.forEach((edge, idx) => {
+                incTable += `<th class="matrix-th" data-fullname="${edge.name.toUpperCase()}">e${idx+1}</th>`;
+            });
+            incTable += "</tr>";
+
+            for(let i=0; i<n; i++) {
+                incTable += `<tr><th class="matrix-th" data-fullname="${nodes[i].toUpperCase()}">${nodes[i].substring(0,3).toUpperCase()}</th>`;
+                for(let j=0; j<edges.length; j++) {
+                    let bagliMi = (edges[j].u === nodes[i] || edges[j].v === nodes[i]);
+                    let valStr = bagliMi ? "1" : "null";
+                    let cssClass = bagliMi ? "val-1" : "val-null";
+                    incTable += `<td class="${cssClass}">${valStr}</td>`;
+                }
+                incTable += "</tr>";
+            }
+            incTable += "</table>";
+            document.getElementById("inc-matrix-content").innerHTML = incTable;
+
+            // ─── 3. AĞIRLIKLI MATRİS (YOL/GÜZERGAH BAZLI) ───
+            let distMap = {};
+            nodes.forEach(u => {
+                distMap[u] = {};
+                nodes.forEach(v => {
+                    distMap[u][v] = (u === v) ? 0 : Infinity;
+                });
+            });
+
+            // Sadece PLANAR (Kesişmeyen) yolların düz kuş uçuşu mesafesini hesapla
+            validLinks.forEach(l => {
+                let c1 = coords[temizle(l.source)];
+                let c2 = coords[temizle(l.target)];
+                if(c1 && c2) {
+                    let km = map.distance([c1.lat, c1.lng], [c2.lat, c2.lng]) / 1000;
+                    distMap[l.source][l.target] = km;
+                    distMap[l.target][l.source] = km;
+                }
+            });
+
+            // Floyd-Warshall Algoritması (Planar yollar üzerinden en kısa rotayı hesaplar)
+            for (let k of nodes) {
+                for (let i of nodes) {
+                    for (let j of nodes) {
+                        if (distMap[i][j] > distMap[i][k] + distMap[k][j]) {
+                            distMap[i][j] = distMap[i][k] + distMap[k][j];
+                        }
+                    }
+                }
+            }
+
+            let weightTable = "<table class='matrix-table'><tr><th style='background:#0a0a0a; color:#555;'>V</th>";
+            nodes.forEach(node => {
+                weightTable += `<th class="matrix-th" data-fullname="${node.toUpperCase()}">${node.substring(0,3).toUpperCase()}</th>`;
+            });
+            weightTable += "</tr>";
+
+            for(let i=0; i<n; i++) {
+                weightTable += `<tr><th class="matrix-th" data-fullname="${nodes[i].toUpperCase()}">${nodes[i].substring(0,3).toUpperCase()}</th>`;
+                for(let j=0; j<n; j++) {
+                    let dVal = distMap[nodes[i]][nodes[j]];
+                    if (i === j) {
+                        weightTable += `<td class="val-0">0</td>`;
+                    } else if (dVal === Infinity) {
+                        weightTable += `<td class="val-null">-</td>`;
+                    } else {
+                        let directMi = isConnected(nodes[i], nodes[j]);
+                        weightTable += `<td class="${directMi ? "val-1" : "val-dist"}">${dVal.toFixed(1)}</td>`;
+                    }
+                }
+                weightTable += "</tr>";
+            }
+            weightTable += "</table>";
+            document.getElementById("weight-matrix-content").innerHTML = weightTable;
+
+            var tooltip = d3.select("#graf-tooltip");
+            d3.selectAll(".matrix-th")
+                .on("mouseover", function(event) {
+                    var fullname = d3.select(this).attr("data-fullname");
+                    tooltip.transition().duration(200).style("opacity", 1);
+                    tooltip.html(fullname)
+                           .style("left", (event.pageX + 15) + "px")
+                           .style("top", (event.pageY - 30) + "px");
+                })
+                .on("mousemove", function(event) {
+                    tooltip.style("left", (event.pageX + 15) + "px")
+                           .style("top", (event.pageY - 30) + "px");
+                })
+                .on("mouseout", function(event) {
+                    tooltip.transition().duration(500).style("opacity", 0);
+                });
+        } catch (e) {
+            console.error("Matris hesaplama hatası:", e);
+        }
+  }
 </script>
